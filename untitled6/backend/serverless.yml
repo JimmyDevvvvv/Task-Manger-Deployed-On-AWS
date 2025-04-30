@@ -1,0 +1,84 @@
+service: task-manager-backend
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  environment:
+    DB_HOST: ${env:DB_HOST}
+    DB_USER: ${env:DB_USER}
+    DB_PASSWORD: ${env:DB_PASSWORD}
+    DB_NAME: ${env:DB_NAME}
+    S3_BUCKET_NAME: ${env:S3_BUCKET_NAME}
+    SQS_QUEUE_URL: ${env:SQS_QUEUE_URL}
+    AWS_NODEJS_CONNECTION_REUSE_ENABLED: 1
+
+functions:
+  createTask:
+    handler: backend/lambdas/createTask/handler.handler
+    events:
+      - http:
+          path: task
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: your-cognito-authorizer-id
+
+  getTasks:
+    handler: backend/lambdas/getTasks/handler.handler
+    events:
+      - http:
+          path: tasks
+          method: get
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: your-cognito-authorizer-id
+
+  updateTask:
+    handler: backend/lambdas/updateTask/handler.handler
+    events:
+      - http:
+          path: task/{id}
+          method: put
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: your-cognito-authorizer-id
+
+  deleteTask:
+    handler: backend/lambdas/deleteTask/handler.handler
+    events:
+      - http:
+          path: task/{id}
+          method: delete
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: your-cognito-authorizer-id
+
+  uploadFile:
+    handler: backend/lambdas/uploadfile/handler.handler
+    events:
+      - http:
+          path: task/{id}/upload
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: your-cognito-authorizer-id
+
+  notifyTask:
+    handler: backend/lambdas/notifyTask/handler.handler
+    events:
+      - http:
+          path: notify
+          method: post
+          cors: true
+          authorizer:
+            type: COGNITO_USER_POOLS
+            authorizerId: your-cognito-authorizer-id
+
+plugins:
+  - serverless-dotenv-plugin
