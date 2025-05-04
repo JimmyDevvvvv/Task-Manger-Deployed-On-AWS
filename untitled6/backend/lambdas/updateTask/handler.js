@@ -1,21 +1,48 @@
-const { success, error } = require('../../common/response');
-const pool = require('../../common/db');
-
+const mysql = require("mysql2/promise");
+const { verifyToken } = require("../../utils/verifyToken");
+const { success, error } = require("../../common/response");
+require("dotenv").config();
 
 exports.handler = async (event) => {
     try {
-        const userId = event.requestContext.authorizer.claims.sub;
-        const { id } = event.pathParameters;
-        const { title, description, due_date, status } = JSON.parse(event.body);
+        const authHeader = event.headers?.Authorization || event.headers?.authorization;
+        if (!authHeader) return error("Unauthorized", 401);
 
-        await pool.execute(
-            'UPDATE tasks SET title = ?, description = ?, due_date = ?, status = ? WHERE task_id = ? AND user_id = ?',
-            [title, description, due_date, status, id, userId]
+        const token = authHeader.replace("Bearer ", "");
+        const decoded = await verifyToken(token);
+        const userId = decoded.sub;
+
+        const { taskId, title, description, status, due_date } = JSON.parse(event.body || "{}");
+        if (!taskId) return error("Task ID is required", 400);
+
+        const conn = await mysql.createConnection({
+            host: process.env.DB_HOST,
+            user: process.env.DB_USER,
+            password: process.env.DB_PASSWORD,
+            database: process.env.DB_NAME,
+        });
+
+        // ✅ Step 1: Check if task belongs to the user
+        const [rows] = await conn.execute(
+            "SELECT user_id FROM tasks WHERE id = ?",
+            [taskId]
         );
 
-        return success({ message: 'Task updated successfully' });
+        if (rows.length === 0) return error("Task not found", 404);
+        if (rows[0].user_id !== userId) return error("Forbidden: Not your task", 403);
+
+        // ✅ Step 2: Update task
+        await conn.execute(
+            `UPDATE tasks 
+       SET title = ?, description = ?, status = ?, due_date = ? 
+       WHERE id = ?`,
+            [title, description, status, due_date || null, taskId]
+        );
+
+        await conn.end();
+        return success({ message: "Task updated successfully" });
+
     } catch (err) {
-        console.error(err);
-        return error('Failed to update task');
+        return error(err.message || "Update failed", 500);
     }
 };
