@@ -93,7 +93,7 @@ The system allows users to **sign up, log in, create tasks, update task statuses
 ---
 
 ## Contributors
-- **Mohamed Gamal** - Project Leader, AWS Architect, Backend Developer  
+- **Mohamed Gamal** - Project Leader  
 
 ---
 
