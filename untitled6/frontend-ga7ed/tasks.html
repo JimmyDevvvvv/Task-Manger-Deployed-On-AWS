@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Tasks</title>
+</head>
+<body>
+  <h1 id="welcome">Hello</h1>
+  <pre id="tokenData"></pre>
+
+  <script>
+    function parseJwt(token) {
+      try {
+        const payload = token.split('.')[1];
+        const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+        return JSON.parse(decoded);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    const token = localStorage.getItem('accessToken');
+    if (!token) {
+      document.getElementById('welcome').innerText = 'Not logged in!';
+    } else {
+      const decoded = parseJwt(token);
+      document.getElementById('welcome').innerText = 'Hello, ' + (decoded.email || 'User');
+      document.getElementById('tokenData').innerText = JSON.stringify(decoded, null, 2);
+    }
+  </script>
+</body>
+</html>
