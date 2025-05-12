@@ -8,7 +8,11 @@
   <h1 id="welcome">Hello</h1>
   <pre id="tokenData"></pre>
 
+  <h2>Your Tasks:</h2>
+  <ul id="taskList"></ul>
+
   <script>
+    // Decode JWT
     function parseJwt(token) {
       try {
         const payload = token.split('.')[1];
@@ -19,13 +23,42 @@
       }
     }
 
-    const token = localStorage.getItem('accessToken');
+    const accessToken = localStorage.getItem('accessToken');
+    const token = localStorage.getItem('idToken');
+    const welcome = document.getElementById('welcome');
+    const tokenData = document.getElementById('tokenData');
+    const taskList = document.getElementById('taskList');
+
     if (!token) {
-      document.getElementById('welcome').innerText = 'Not logged in!';
+      welcome.innerText = 'Not logged in!';
     } else {
+        console.log("token in tasks",token);
       const decoded = parseJwt(token);
-      document.getElementById('welcome').innerText = 'Hello, ' + (decoded.email || 'User');
-      document.getElementById('tokenData').innerText = JSON.stringify(decoded, null, 2);
+      welcome.innerText = 'Hello, ' + (decoded.email || 'User');
+      tokenData.innerText = JSON.stringify(decoded, null, 2);
+
+      // ✅ Fetch tasks from the API
+      fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.tasks && data.tasks.length > 0) {
+          data.tasks.forEach(task => {
+            const li = document.createElement('li');
+            li.textContent = `${task.title} - ${task.status} (Due: ${task.due_date})`;
+            taskList.appendChild(li);
+          });
+        } else {
+          taskList.innerHTML = '<li>No tasks found.</li>';
+        }
+      })
+      .catch(err => {
+        taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
+      });
     }
   </script>
 </body>

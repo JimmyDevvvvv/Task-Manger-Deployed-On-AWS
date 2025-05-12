@@ -37,8 +37,10 @@
         const data = await response.json();
 
         // ✅ Store access token in localStorage
-        if (data.accessToken) {
+        if (data) {
           localStorage.setItem('accessToken', data.accessToken);
+          localStorage.setItem('idToken', data.idToken);
+          console.log("token in tasks",data.idToken);
           window.location.href = 'tasks.html';
         }
 
