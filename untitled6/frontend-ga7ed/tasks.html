@@ -1,10 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <title>Tasks</title>
 </head>
+
 <body>
+  <button id="signOutButton" style="position: absolute; top: 10px; right: 10px;">Sign Out</button>
   <h1 id="welcome">Hello</h1>
   <pre id="tokenData"></pre>
 
@@ -15,18 +18,18 @@
   <h2>Add a New Task</h2>
   <form id="taskForm">
     <label>Title: <input type="text" id="taskTitle" required /></label><br><br>
-    
+
     <label>Description:<br>
       <textarea id="taskDescription" rows="4" cols="40" required></textarea>
     </label><br><br>
-    
+
     <label>Status:
       <select id="taskStatus">
         <option value="Pending">Pending</option>
         <option value="Completed">Completed</option>
       </select>
     </label><br><br>
-    
+
     <label>Due Date:
       <input type="date" id="taskDueDate" />
     </label><br><br>
@@ -61,112 +64,112 @@
       tokenData.innerText = JSON.stringify(decoded, null, 2);
 
       // ✅ Load tasks from API
-   function loadTasks() {
-  fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  })
-  .then(res => res.json())
-  .then(data => {
-    taskList.innerHTML = '';
-    if (data.tasks && data.tasks.length > 0) {
-      data.tasks.forEach(task => {
-        const li = document.createElement('li');
-        const btn=document.createElement('div');
-        const btn1=document.createElement('div');
-        li.textContent = `#${task.id} | ${task.title} | ${task.description} | ${task.status} | Due: ${task.due_date || "N/A"} | Created: ${task.created_at}`;
+      function loadTasks() {
+        fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+          .then(res => res.json())
+          .then(data => {
+            taskList.innerHTML = '';
+            if (data.tasks && data.tasks.length > 0) {
+              data.tasks.forEach(task => {
+                const li = document.createElement('li');
+                const btn = document.createElement('div');
+                const btn1 = document.createElement('div');
+                li.textContent = `#${task.id} | ${task.title} | ${task.description} | ${task.status} | Due: ${task.due_date || "N/A"} | Created: ${task.created_at}`;
 
-        // Create Delete button
-        const deleteBtn = document.createElement('button');
-        deleteBtn.textContent = 'Delete';
-        deleteBtn.onclick = () => deleteTask(task.id);
-        const updateBtn = document.createElement('button');
-        updateBtn.textContent = 'Update';
-        updateBtn.onclick = () => updateTask(task.id);
-        
-        //taskList.appendChild(li);
-        btn.appendChild(li);
-        btn.appendChild(deleteBtn); 
-        btn1.appendChild(updateBtn);
-        btn.appendChild(btn1);
-        taskList.appendChild(btn);
-      });
-    } else {
-      taskList.innerHTML = '<li>No tasks found.</li>';
-    }
-  })
-  .catch(err => {
-    taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
-  });
-}
+                // Create Delete button
+                const deleteBtn = document.createElement('button');
+                deleteBtn.textContent = 'Delete';
+                deleteBtn.onclick = () => deleteTask(task.id);
+                const updateBtn = document.createElement('button');
+                updateBtn.textContent = 'Update';
+                updateBtn.onclick = () => updateTask(task.id);
 
-function deleteTask(taskId) {
-  fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
-    method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${token}`
-    }
-  })
-  .then(res => {
-    if (res.ok) {
-      loadTasks(); // Refresh task list
-    } else {
-      return res.json().then(data => {
-        throw new Error(data.message || 'Failed to delete task');
-      });
-    }
-  })
-  .catch(err => {
-    alert('Error deleting task: ' + err.message);
-  });
-}
-function updateTask(taskId) {
-  // Get values from the form fields
-  const title = document.getElementById('taskTitle').value.trim();
-  const description = document.getElementById('taskDescription').value.trim();
-  const status = document.getElementById('taskStatus').value;
-  const due_date = document.getElementById('taskDueDate').value || null;
+                //taskList.appendChild(li);
+                btn.appendChild(li);
+                btn.appendChild(deleteBtn);
+                btn1.appendChild(updateBtn);
+                btn.appendChild(btn1);
+                taskList.appendChild(btn);
+              });
+            } else {
+              taskList.innerHTML = '<li>No tasks found.</li>';
+            }
+          })
+          .catch(err => {
+            taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
+          });
+      }
 
-  // Build the request payload
-  const payload = {
-    title,
-    description,
-    status,
-    due_date
-  };
+      function deleteTask(taskId) {
+        fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+          .then(res => {
+            if (res.ok) {
+              loadTasks(); // Refresh task list
+            } else {
+              return res.json().then(data => {
+                throw new Error(data.message || 'Failed to delete task');
+              });
+            }
+          })
+          .catch(err => {
+            alert('Error deleting task: ' + err.message);
+          });
+      }
+      function updateTask(taskId) {
+        // Get values from the form fields
+        const title = document.getElementById('taskTitle').value.trim();
+        const description = document.getElementById('taskDescription').value.trim();
+        const status = document.getElementById('taskStatus').value;
+        const due_date = document.getElementById('taskDueDate').value || null;
 
-  // Make the PUT request
-  fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
-    method: 'PUT',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
-  })
-  .then(res => {
-    if (res.ok) {
-      loadTasks(); // Refresh the task list
-      alert("✅ Task updated successfully");
-    } else {
-      return res.json().then(data => {
-        throw new Error(data.message || 'Failed to update task');
-      });
-    }
-  })
-  .catch(err => {
-    alert('Error updating task: ' + err.message);
-  });
-}
+        // Build the request payload
+        const payload = {
+          title,
+          description,
+          status,
+          due_date
+        };
+
+        // Make the PUT request
+        fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
+        })
+          .then(res => {
+            if (res.ok) {
+              loadTasks(); // Refresh the task list
+              alert("✅ Task updated successfully");
+            } else {
+              return res.json().then(data => {
+                throw new Error(data.message || 'Failed to update task');
+              });
+            }
+          })
+          .catch(err => {
+            alert('Error updating task: ' + err.message);
+          });
+      }
 
 
 
       loadTasks(); // initial fetch
 
       // ✅ Task submission
-      document.getElementById('taskForm').addEventListener('submit', function(e) {
+      document.getElementById('taskForm').addEventListener('submit', function (e) {
         e.preventDefault();
 
         const title = document.getElementById('taskTitle').value.trim();
@@ -189,21 +192,31 @@ function updateTask(taskId) {
             due_date
           })
         })
-        .then(res => res.json())
-        .then(data => {
-          // ✅ Clear form
-          document.getElementById('taskTitle').value = '';
-          document.getElementById('taskDescription').value = '';
-          document.getElementById('taskDueDate').value = '';
-          document.getElementById('taskStatus').value = 'Pending';
-          
-          loadTasks(); // 🔁 reload updated tasks
-        })
-        .catch(err => {
-          alert('Failed to add task: ' + err.message);
-        });
+          .then(res => res.json())
+          .then(data => {
+            // ✅ Clear form
+            document.getElementById('taskTitle').value = '';
+            document.getElementById('taskDescription').value = '';
+            document.getElementById('taskDueDate').value = '';
+            document.getElementById('taskStatus').value = 'Pending';
+
+            loadTasks(); // 🔁 reload updated tasks
+          })
+          .catch(err => {
+            alert('Failed to add task: ' + err.message);
+          });
       });
     }
+
+    document.getElementById('signOutButton').addEventListener('click', function () {
+      // Clear tokens from localStorage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('idToken');
+
+      // Redirect to login page
+      window.location.href = 'login.html'; // Replace 'login.html' with the actual login page URL
+    });
   </script>
 </body>
+
 </html>
