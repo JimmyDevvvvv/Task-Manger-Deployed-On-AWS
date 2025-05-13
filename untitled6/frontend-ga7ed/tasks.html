@@ -75,17 +75,22 @@
       data.tasks.forEach(task => {
         const li = document.createElement('li');
         const btn=document.createElement('div');
+        const btn1=document.createElement('div');
         li.textContent = `#${task.id} | ${task.title} | ${task.description} | ${task.status} | Due: ${task.due_date || "N/A"} | Created: ${task.created_at}`;
 
         // Create Delete button
         const deleteBtn = document.createElement('button');
         deleteBtn.textContent = 'Delete';
         deleteBtn.onclick = () => deleteTask(task.id);
-        
+        const updateBtn = document.createElement('button');
+        updateBtn.textContent = 'Update';
+        updateBtn.onclick = () => updateTask(task.id);
         
         //taskList.appendChild(li);
         btn.appendChild(li);
         btn.appendChild(deleteBtn); 
+        btn1.appendChild(updateBtn);
+        btn.appendChild(btn1);
         taskList.appendChild(btn);
       });
     } else {
@@ -115,6 +120,44 @@ function deleteTask(taskId) {
   })
   .catch(err => {
     alert('Error deleting task: ' + err.message);
+  });
+}
+function updateTask(taskId) {
+  // Get values from the form fields
+  const title = document.getElementById('taskTitle').value.trim();
+  const description = document.getElementById('taskDescription').value.trim();
+  const status = document.getElementById('taskStatus').value;
+  const due_date = document.getElementById('taskDueDate').value || null;
+
+  // Build the request payload
+  const payload = {
+    title,
+    description,
+    status,
+    due_date
+  };
+
+  // Make the PUT request
+  fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
+    method: 'PUT',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(payload)
+  })
+  .then(res => {
+    if (res.ok) {
+      loadTasks(); // Refresh the task list
+      alert("✅ Task updated successfully");
+    } else {
+      return res.json().then(data => {
+        throw new Error(data.message || 'Failed to update task');
+      });
+    }
+  })
+  .catch(err => {
+    alert('Error updating task: ' + err.message);
   });
 }
 
