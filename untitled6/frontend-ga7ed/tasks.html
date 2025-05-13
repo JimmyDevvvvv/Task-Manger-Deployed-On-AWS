@@ -61,30 +61,63 @@
       tokenData.innerText = JSON.stringify(decoded, null, 2);
 
       // ✅ Load tasks from API
-      function loadTasks() {
-        fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        .then(res => res.json())
-        .then(data => {
-          taskList.innerHTML = '';
-          if (data.tasks && data.tasks.length > 0) {
-            data.tasks.forEach(task => {
-              const li = document.createElement('li');
-              li.textContent = `#${task.id} | ${task.title} | ${task.description} | ${task.status} | Due: ${task.due_date || "N/A"} | Created: ${task.created_at}`;
-              taskList.appendChild(li);
-            });
-          } else {
-            taskList.innerHTML = '<li>No tasks found.</li>';
-          }
-        })
-        .catch(err => {
-          taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
-        });
-      }
+   function loadTasks() {
+  fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(res => res.json())
+  .then(data => {
+    taskList.innerHTML = '';
+    if (data.tasks && data.tasks.length > 0) {
+      data.tasks.forEach(task => {
+        const li = document.createElement('li');
+        const btn=document.createElement('div');
+        li.textContent = `#${task.id} | ${task.title} | ${task.description} | ${task.status} | Due: ${task.due_date || "N/A"} | Created: ${task.created_at}`;
+
+        // Create Delete button
+        const deleteBtn = document.createElement('button');
+        deleteBtn.textContent = 'Delete';
+        deleteBtn.onclick = () => deleteTask(task.id);
+        
+        
+        taskList.appendChild(li);
+        btn.appendChild(deleteBtn); 
+        taskList.appendChild(btn);
+      });
+    } else {
+      taskList.innerHTML = '<li>No tasks found.</li>';
+    }
+  })
+  .catch(err => {
+    taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
+  });
+}
+
+function deleteTask(taskId) {
+  fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
+    method: 'DELETE',
+    headers: {
+      'Authorization': `Bearer ${token}`
+    }
+  })
+  .then(res => {
+    if (res.ok) {
+      loadTasks(); // Refresh task list
+    } else {
+      return res.json().then(data => {
+        throw new Error(data.message || 'Failed to delete task');
+      });
+    }
+  })
+  .catch(err => {
+    alert('Error deleting task: ' + err.message);
+  });
+}
+
+
 
       loadTasks(); // initial fetch
 
