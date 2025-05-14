@@ -4,38 +4,62 @@
 <head>
   <meta charset="UTF-8">
   <title>Tasks</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 
 <body>
-  <button id="signOutButton" style="position: absolute; top: 10px; right: 10px;">Sign Out</button>
-  <h1 id="welcome">Hello</h1>
-  <pre id="tokenData"></pre>
+  <header>
+    <div class="logo">Task<span>Manager</span></div>
+    <nav>
+      <button id="signOutButton">Sign Out</button>
+    </nav>
+  </header>
 
-  <h2>Your Tasks:</h2>
-  <ul id="taskList"></ul>
+  <main>
+    <div class="container">
+      <div class="page-header">
+        <h1 id="welcome">Hello</h1>
+      </div>
 
-  <!-- ✅ New task creation form -->
-  <h2>Add a New Task</h2>
-  <form id="taskForm">
-    <label>Title: <input type="text" id="taskTitle" required /></label><br><br>
+      <div class="task-list-container card">
+        <h2>Your Tasks</h2>
+        <div id="taskList" class="task-list"></div>
+      </div>
 
-    <label>Description:<br>
-      <textarea id="taskDescription" rows="4" cols="40" required></textarea>
-    </label><br><br>
+      <!-- ✅ New task creation form -->
+      <div class="form-container">
+        <h2>Add a New Task</h2>
+        <form id="taskForm">
+          <div class="form-group">
+            <label for="taskTitle">Title</label>
+            <input type="text" id="taskTitle" required placeholder="Enter task title" />
+          </div>
 
-    <label>Status:
-      <select id="taskStatus">
-        <option value="Pending">Pending</option>
-        <option value="Completed">Completed</option>
-      </select>
-    </label><br><br>
+          <div class="form-group">
+            <label for="taskDescription">Description</label>
+            <textarea id="taskDescription" rows="4" required placeholder="Enter task description"></textarea>
+          </div>
 
-    <label>Due Date:
-      <input type="date" id="taskDueDate" />
-    </label><br><br>
+          <div class="form-group">
+            <label for="taskStatus">Status</label>
+            <select id="taskStatus">
+              <option value="Pending">Pending</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
 
-    <button type="submit">Submit Task</button>
-  </form>
+          <div class="form-group">
+            <label for="taskDueDate">Due Date</label>
+            <input type="date" id="taskDueDate" />
+          </div>
+
+          <div class="button-group">
+            <button type="submit">Create Task</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </main>
 
   <script>
     // Decode JWT
@@ -47,21 +71,18 @@
       } catch (e) {
         return null;
       }
-    }
-
-    const accessToken = localStorage.getItem('accessToken');
+    } const accessToken = localStorage.getItem('accessToken');
     const token = localStorage.getItem('idToken');
     const welcome = document.getElementById('welcome');
-    const tokenData = document.getElementById('tokenData');
     const taskList = document.getElementById('taskList');
 
     if (!token) {
       welcome.innerText = 'Not logged in!';
+      window.location.href = 'login.html'; // Redirect to login if not authenticated
     } else {
       console.log("token in tasks", token);
       const decoded = parseJwt(token);
       welcome.innerText = 'Hello, ' + (decoded.email || 'User');
-      tokenData.innerText = JSON.stringify(decoded, null, 2);
 
       // ✅ Load tasks from API
       function loadTasks() {
@@ -73,28 +94,51 @@
         })
           .then(res => res.json())
           .then(data => {
-            taskList.innerHTML = '';
-            if (data.tasks && data.tasks.length > 0) {
+            taskList.innerHTML = ''; if (data.tasks && data.tasks.length > 0) {
               data.tasks.forEach(task => {
-                const li = document.createElement('li');
-                const btn = document.createElement('div');
-                const btn1 = document.createElement('div');
-                li.textContent = `#${task.id} | ${task.title} | ${task.description} | ${task.status} | Due: ${task.due_date || "N/A"} | Created: ${task.created_at}`;
+                const taskItem = document.createElement('div');
+                taskItem.className = 'task-item';
 
-                // Create Delete button
+                const taskContent = document.createElement('div');
+                taskContent.className = 'task-content';
+
+                const taskTitle = document.createElement('div');
+                taskTitle.className = 'task-title';
+                taskTitle.textContent = task.title;
+
+                const taskMeta = document.createElement('div');
+                taskMeta.className = 'task-meta';
+                taskMeta.innerHTML = `
+                  <span class="status-badge status-${task.status.toLowerCase()}">${task.status}</span>
+                  <span>Due: ${task.due_date || "N/A"}</span>
+                  <span>Created: ${task.created_at}</span>
+                `;
+
+                const taskDesc = document.createElement('div');
+                taskDesc.textContent = task.description;
+
+                taskContent.appendChild(taskTitle);
+                taskContent.appendChild(taskDesc);
+                taskContent.appendChild(taskMeta);
+
+                const taskActions = document.createElement('div');
+                taskActions.className = 'task-actions';
+
                 const deleteBtn = document.createElement('button');
                 deleteBtn.textContent = 'Delete';
+                deleteBtn.className = 'secondary';
                 deleteBtn.onclick = () => deleteTask(task.id);
+
                 const updateBtn = document.createElement('button');
                 updateBtn.textContent = 'Update';
                 updateBtn.onclick = () => updateTask(task.id);
 
-                //taskList.appendChild(li);
-                btn.appendChild(li);
-                btn.appendChild(deleteBtn);
-                btn1.appendChild(updateBtn);
-                btn.appendChild(btn1);
-                taskList.appendChild(btn);
+                taskActions.appendChild(updateBtn);
+                taskActions.appendChild(deleteBtn);
+
+                taskItem.appendChild(taskContent);
+                taskItem.appendChild(taskActions);
+                taskList.appendChild(taskItem);
               });
             } else {
               taskList.innerHTML = '<li>No tasks found.</li>';
