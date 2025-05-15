@@ -76,6 +76,10 @@
     const welcome = document.getElementById('welcome');
     const taskList = document.getElementById('taskList');
 
+    // Play welcome sound when page loads
+    const audio = new Audio('videoplayback.mp3');
+    audio.play().catch(err => console.log('Audio playback failed:', err));
+
     if (!token) {
       welcome.innerText = 'Not logged in!';
       window.location.href = 'login.html'; // Redirect to login if not authenticated
