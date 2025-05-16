@@ -8,259 +8,275 @@
 </head>
 
 <body>
-  <header>
-    <div class="logo">Task<span>Manager</span></div>
-    <nav>
-      <button id="signOutButton">Sign Out</button>
-    </nav>
-  </header>
+<header>
+  <div class="logo">Task<span>Manager</span></div>
+  <nav>
+    <button id="signOutButton">Sign Out</button>
+  </nav>
+</header>
 
-  <main>
-    <div class="container">
-      <div class="page-header">
-        <h1 id="welcome">Hello</h1>
-      </div>
-
-      <div class="task-list-container card">
-        <h2>Your Tasks</h2>
-        <div id="taskList" class="task-list"></div>
-      </div>
-
-      <!-- ✅ New task creation form -->
-      <div class="form-container">
-        <h2>Add a New Task</h2>
-        <form id="taskForm">
-          <div class="form-group">
-            <label for="taskTitle">Title</label>
-            <input type="text" id="taskTitle" required placeholder="Enter task title" />
-          </div>
-
-          <div class="form-group">
-            <label for="taskDescription">Description</label>
-            <textarea id="taskDescription" rows="4" required placeholder="Enter task description"></textarea>
-          </div>
-
-          <div class="form-group">
-            <label for="taskStatus">Status</label>
-            <select id="taskStatus">
-              <option value="Pending">Pending</option>
-              <option value="Completed">Completed</option>
-            </select>
-          </div>
-
-          <div class="form-group">
-            <label for="taskDueDate">Due Date</label>
-            <input type="date" id="taskDueDate" />
-          </div>
-
-          <div class="button-group">
-            <button type="submit">Create Task</button>
-          </div>
-        </form>
-      </div>
+<main>
+  <div class="container">
+    <div class="page-header">
+      <h1 id="welcome">Hello</h1>
     </div>
-  </main>
 
-  <script>
-    // Decode JWT
-    function parseJwt(token) {
-      try {
-        const payload = token.split('.')[1];
-        const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
-        return JSON.parse(decoded);
-      } catch (e) {
-        return null;
-      }
-    } const accessToken = localStorage.getItem('accessToken');
-    const token = localStorage.getItem('idToken');
-    const welcome = document.getElementById('welcome');
-    const taskList = document.getElementById('taskList');
+    <div class="task-list-container card">
+      <h2>Your Tasks</h2>
+      <div id="taskList" class="task-list"></div>
+    </div>
 
-    if (!token) {
-      welcome.innerText = 'Not logged in!';
-      window.location.href = 'login.html'; // Redirect to login if not authenticated
-    } else {
-      console.log("token in tasks", token);
-      const decoded = parseJwt(token);
-      welcome.innerText = 'Hello, ' + (decoded.email || 'User');
+    <div class="form-container">
+      <h2>Add a New Task</h2>
+      <form id="taskForm">
+        <div class="form-group">
+          <label for="taskTitle">Title</label>
+          <input type="text" id="taskTitle" required placeholder="Enter task title" />
+        </div>
 
-      // ✅ Load tasks from API
-      function loadTasks() {
-        fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-          .then(res => res.json())
-          .then(data => {
-            taskList.innerHTML = ''; if (data.tasks && data.tasks.length > 0) {
-              data.tasks.forEach(task => {
-                const taskItem = document.createElement('div');
-                taskItem.className = 'task-item';
+        <div class="form-group">
+          <label for="taskDescription">Description</label>
+          <textarea id="taskDescription" rows="4" required placeholder="Enter task description"></textarea>
+        </div>
 
-                const taskContent = document.createElement('div');
-                taskContent.className = 'task-content';
+        <div class="form-group">
+          <label for="taskStatus">Status</label>
+          <select id="taskStatus">
+            <option value="Pending">Pending</option>
+            <option value="Completed">Completed</option>
+          </select>
+        </div>
 
-                const taskTitle = document.createElement('div');
-                taskTitle.className = 'task-title';
-                taskTitle.textContent = task.title;
+        <div class="form-group">
+          <label for="taskDueDate">Due Date</label>
+          <input type="date" id="taskDueDate" />
+        </div>
 
-                const taskMeta = document.createElement('div');
-                taskMeta.className = 'task-meta';
-                taskMeta.innerHTML = `
+        <div class="button-group">
+          <button type="submit">Create Task</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- ✅ File Upload Section -->
+    <div class="form-container">
+      <h2>Upload File to Task</h2>
+      <form id="uploadForm">
+        <div class="form-group">
+          <label for="uploadTaskId">Task ID</label>
+          <input type="text" id="uploadTaskId" required placeholder="Enter Task ID to upload to">
+        </div>
+
+        <div class="form-group">
+          <label for="uploadFile">Select File</label>
+          <input type="file" id="uploadFile" required>
+        </div>
+
+        <div class="button-group">
+          <button type="submit">Upload File</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+<script>
+  function parseJwt(token) {
+    try {
+      const payload = token.split('.')[1];
+      const decoded = atob(payload.replace(/-/g, '+').replace(/_/g, '/'));
+      return JSON.parse(decoded);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  const accessToken = localStorage.getItem('accessToken');
+  const token = localStorage.getItem('idToken');
+  const welcome = document.getElementById('welcome');
+  const taskList = document.getElementById('taskList');
+
+  if (!token) {
+    welcome.innerText = 'Not logged in!';
+    window.location.href = 'login.html';
+  } else {
+    console.log("token in tasks", token);
+    const decoded = parseJwt(token);
+    welcome.innerText = 'Hello, ' + (decoded.email || 'User');
+
+    function loadTasks() {
+      fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+              .then(res => res.json())
+              .then(data => {
+                taskList.innerHTML = '';
+                if (data.tasks && data.tasks.length > 0) {
+                  data.tasks.forEach(task => {
+                    const taskItem = document.createElement('div');
+                    taskItem.className = 'task-item';
+
+                    const taskContent = document.createElement('div');
+                    taskContent.className = 'task-content';
+
+                    const taskTitle = document.createElement('div');
+                    taskTitle.className = 'task-title';
+                    taskTitle.textContent = task.title;
+
+                    const taskMeta = document.createElement('div');
+                    taskMeta.className = 'task-meta';
+                    taskMeta.innerHTML = `
                   <span class="status-badge status-${task.status.toLowerCase()}">${task.status}</span>
                   <span>Due: ${task.due_date || "N/A"}</span>
                   <span>Created: ${task.created_at}</span>
                 `;
 
-                const taskDesc = document.createElement('div');
-                taskDesc.textContent = task.description;
+                    const taskDesc = document.createElement('div');
+                    taskDesc.textContent = task.description;
 
-                taskContent.appendChild(taskTitle);
-                taskContent.appendChild(taskDesc);
-                taskContent.appendChild(taskMeta);
+                    taskContent.appendChild(taskTitle);
+                    taskContent.appendChild(taskDesc);
+                    taskContent.appendChild(taskMeta);
 
-                const taskActions = document.createElement('div');
-                taskActions.className = 'task-actions';
+                    const taskActions = document.createElement('div');
+                    taskActions.className = 'task-actions';
 
-                const deleteBtn = document.createElement('button');
-                deleteBtn.textContent = 'Delete';
-                deleteBtn.className = 'secondary';
-                deleteBtn.onclick = () => deleteTask(task.id);
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Delete';
+                    deleteBtn.className = 'secondary';
+                    deleteBtn.onclick = () => deleteTask(task.id);
 
-                const updateBtn = document.createElement('button');
-                updateBtn.textContent = 'Update';
-                updateBtn.onclick = () => updateTask(task.id);
+                    const updateBtn = document.createElement('button');
+                    updateBtn.textContent = 'Update';
+                    updateBtn.onclick = () => updateTask(task.id);
 
-                taskActions.appendChild(updateBtn);
-                taskActions.appendChild(deleteBtn);
+                    taskActions.appendChild(updateBtn);
+                    taskActions.appendChild(deleteBtn);
 
-                taskItem.appendChild(taskContent);
-                taskItem.appendChild(taskActions);
-                taskList.appendChild(taskItem);
+                    taskItem.appendChild(taskContent);
+                    taskItem.appendChild(taskActions);
+                    taskList.appendChild(taskItem);
+                  });
+                } else {
+                  taskList.innerHTML = '<li>No tasks found.</li>';
+                }
+              })
+              .catch(err => {
+                taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
               });
-            } else {
-              taskList.innerHTML = '<li>No tasks found.</li>';
-            }
-          })
-          .catch(err => {
-            taskList.innerHTML = '<li>Error loading tasks: ' + err.message + '</li>';
-          });
-      }
+    }
 
-      function deleteTask(taskId) {
-        fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-          .then(res => {
-            if (res.ok) {
-              loadTasks(); // Refresh task list
-            } else {
-              return res.json().then(data => {
-                throw new Error(data.message || 'Failed to delete task');
-              });
-            }
-          })
-          .catch(err => {
-            alert('Error deleting task: ' + err.message);
-          });
-      }
-      function updateTask(taskId) {
-        // Get values from the form fields
-        const title = document.getElementById('taskTitle').value.trim();
-        const description = document.getElementById('taskDescription').value.trim();
-        const status = document.getElementById('taskStatus').value;
-        const due_date = document.getElementById('taskDueDate').value || null;
+    function deleteTask(taskId) {
+      fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      })
+              .then(res => res.ok ? loadTasks() : res.json().then(data => { throw new Error(data.message); }))
+              .catch(err => alert('Error deleting task: ' + err.message));
+    }
 
-        // Build the request payload
-        const payload = {
-          title,
-          description,
-          status,
-          due_date
-        };
+    function updateTask(taskId) {
+      const title = document.getElementById('taskTitle').value.trim();
+      const description = document.getElementById('taskDescription').value.trim();
+      const status = document.getElementById('taskStatus').value;
+      const due_date = document.getElementById('taskDueDate').value || null;
 
-        // Make the PUT request
-        fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
-          method: 'PUT',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify(payload)
-        })
-          .then(res => {
-            if (res.ok) {
-              loadTasks(); // Refresh the task list
-              alert("✅ Task updated successfully");
-            } else {
-              return res.json().then(data => {
-                throw new Error(data.message || 'Failed to update task');
-              });
-            }
-          })
-          .catch(err => {
-            alert('Error updating task: ' + err.message);
-          });
-      }
+      const payload = { title, description, status, due_date };
 
+      fetch(`https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks/${taskId}`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      })
+              .then(res => {
+                if (res.ok) {
+                  loadTasks();
+                  alert("✅ Task updated successfully");
+                } else {
+                  return res.json().then(data => { throw new Error(data.message); });
+                }
+              })
+              .catch(err => alert('Error updating task: ' + err.message));
+    }
 
+    loadTasks();
 
-      loadTasks(); // initial fetch
+    document.getElementById('taskForm').addEventListener('submit', function (e) {
+      e.preventDefault();
 
-      // ✅ Task submission
-      document.getElementById('taskForm').addEventListener('submit', function (e) {
-        e.preventDefault();
+      const title = document.getElementById('taskTitle').value.trim();
+      const description = document.getElementById('taskDescription').value.trim();
+      const status = document.getElementById('taskStatus').value;
+      const due_date = document.getElementById('taskDueDate').value || null;
 
-        const title = document.getElementById('taskTitle').value.trim();
-        const description = document.getElementById('taskDescription').value.trim();
-        const status = document.getElementById('taskStatus').value;
-        const due_date = document.getElementById('taskDueDate').value || null;
+      fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ title, description, status, due_date })
+      })
+              .then(res => res.json())
+              .then(() => {
+                document.getElementById('taskTitle').value = '';
+                document.getElementById('taskDescription').value = '';
+                document.getElementById('taskDueDate').value = '';
+                document.getElementById('taskStatus').value = 'Pending';
+                loadTasks();
+              })
+              .catch(err => alert('Failed to add task: ' + err.message));
+    });
 
-        if (!title || !description) return;
+    // ✅ File upload logic
+    document.getElementById('uploadForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
 
-        fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/tasks', {
+      const taskId = document.getElementById('uploadTaskId').value.trim();
+      const fileInput = document.getElementById('uploadFile');
+      const file = fileInput.files[0];
+      if (!taskId || !file) return alert("Task ID and file are required");
+
+      try {
+        const presignRes = await fetch('https://1wo0qdba0g.execute-api.eu-north-1.amazonaws.com/dev/attachments', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
           },
-          body: JSON.stringify({
-            title,
-            description,
-            status,
-            due_date
-          })
-        })
-          .then(res => res.json())
-          .then(data => {
-            // ✅ Clear form
-            document.getElementById('taskTitle').value = '';
-            document.getElementById('taskDescription').value = '';
-            document.getElementById('taskDueDate').value = '';
-            document.getElementById('taskStatus').value = 'Pending';
+          body: JSON.stringify({ taskId, filename: file.name })
+        });
 
-            loadTasks(); // 🔁 reload updated tasks
-          })
-          .catch(err => {
-            alert('Failed to add task: ' + err.message);
-          });
-      });
-    }
+        const { signedUrl, fileKey } = await presignRes.json();
 
-    document.getElementById('signOutButton').addEventListener('click', function () {
-      // Clear tokens from localStorage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('idToken');
+        const uploadRes = await fetch(signedUrl, {
+          method: 'PUT',
+          body: file
+        });
 
-      // Redirect to login page
-      window.location.href = 'login.html'; // Replace 'login.html' with the actual login page URL
+        if (!uploadRes.ok) throw new Error("Upload to S3 failed");
+        alert("✅ File uploaded successfully!");
+
+      } catch (err) {
+        alert("❌ File upload failed: " + err.message);
+      }
     });
-  </script>
+  }
+
+  document.getElementById('signOutButton').addEventListener('click', function () {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('idToken');
+    window.location.href = 'login.html';
+  });
+</script>
 </body>
 
 </html>
