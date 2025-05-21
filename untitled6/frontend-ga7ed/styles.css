@@ -1,12 +1,12 @@
 :root {
     --primary: #ff9900;
-    --background: #181818;
-    --surface: #242424;
+    --background: #000000;
+    --surface: #111111;
     --text: #ffffff;
-    --text-secondary: #b3b3b3;
-    --border: rgba(255, 255, 255, 0.1);
-    --success: #4caf50;
-    --error: #f44336;
+    --text-secondary: #888888;
+    --border: rgba(255, 153, 0, 0.2);
+    --success: #00cc66;
+    --error: #ff3366;
 }
 
 body {
@@ -174,7 +174,7 @@ button {
 
 button:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(255, 153, 0, 0.3);
+    box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3);
 }
 
 button.secondary {
@@ -184,7 +184,7 @@ button.secondary {
 }
 
 button.secondary:hover {
-    background-color: rgba(255, 153, 0, 0.1);
+    background-color: rgba(157, 78, 221, 0.1);
 }
 
 /* Task List Styles */
@@ -244,12 +244,12 @@ button.secondary:hover {
 }
 
 .status-pending {
-    background-color: rgba(255, 153, 0, 0.2);
+    background-color: rgba(0, 255, 204, 0.1);
     color: var(--primary);
 }
 
 .status-completed {
-    background-color: rgba(76, 175, 80, 0.2);
+    background-color: rgba(0, 255, 136, 0.1);
     color: var(--success);
 }
 
