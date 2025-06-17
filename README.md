@@ -93,9 +93,8 @@ The system allows users to **sign up, log in, create tasks, update task statuses
 ---
 
 ## Contributors
-- **Mohamed Gamal** - Project Leader  
-
+- **Mohamed Gamal** - Implemented Amazon S3 and RDS integration, set up Cognito authentication, developed backend APIs, and configured AWS SQS and SNS services
+- **Ahmed Tamer** - Developed the frontend hosted on an EC2 instance, deployed backend services as AWS Lambda functions, and configured AWS CloudWatch for monitoring and logging
 ---
 
-## Contact  
-For questions or concerns, please reach out to **jimmyfr6@gmail.com**.  
+ 
